@@ -16,25 +16,29 @@ const IndianStockTracker = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [dataSource, setDataSource] = useState('demo'); // 'demo' or 'live'
   const [error, setError] = useState('');
+  const [indianStockSymbols, setIndianStockSymbols] = useState([]);
 
-  // Available Indian stock symbols with proper NSE format
-  const indianStockSymbols = [
-    { symbol: 'RELIANCE.NS', name: 'Reliance Industries' },
-    { symbol: 'TCS.NS', name: 'Tata Consultancy Services' },
-    { symbol: 'HDFCBANK.NS', name: 'HDFC Bank' },
-    { symbol: 'INFY.NS', name: 'Infosys' },
-    { symbol: 'ICICIBANK.NS', name: 'ICICI Bank' },
-    { symbol: 'BHARTIARTL.NS', name: 'Bharti Airtel' },
-    { symbol: 'ITC.NS', name: 'ITC' },
-    { symbol: 'HINDUNILVR.NS', name: 'Hindustan Unilever' },
-    { symbol: 'KOTAKBANK.NS', name: 'Kotak Mahindra Bank' },
-    { symbol: 'SBIN.NS', name: 'State Bank of India' },
-    { symbol: 'LT.NS', name: 'Larsen & Toubro' },
-    { symbol: 'WIPRO.NS', name: 'Wipro' },
-    { symbol: 'MARUTI.NS', name: 'Maruti Suzuki' },
-    { symbol: 'BAJFINANCE.NS', name: 'Bajaj Finance' },
-    { symbol: 'ASIANPAINT.NS', name: 'Asian Paints' }
-  ];
+  useEffect(() => {
+    const fetchAvailableStocks = async () => {
+      try {
+        const response = await fetch('http://localhost:5001/api/stocks/search');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const json = await response.json();
+        if (json.success) {
+          setIndianStockSymbols(json.data);
+        } else {
+          throw new Error(json.error || 'Failed to fetch available stocks');
+        }
+      } catch (error) {
+        setError('Failed to fetch stock list. Please try again later.');
+        console.error('Error fetching available stocks:', error);
+      }
+    };
+
+    fetchAvailableStocks();
+  }, []);
 
   // Fetch data from Python backend API
   const fetchStockData = async (symbols) => {
